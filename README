@@ -1,0 +1,102 @@
+Here's a shorter, startup-style README that's easy for judges, investors, and developers to understand:
+
+# LedgerFlow AI
+
+**The Financial Operating System for Emerging Market Businesses**
+
+LedgerFlow AI helps businesses receive payments, manage finances, build a verifiable reputation, and access capital using Stellar-powered infrastructure and AI.
+
+## Problem
+
+Millions of SMEs across Africa, Latin America, and Southeast Asia struggle with:
+
+- Expensive cross-border payments
+- Poor bookkeeping systems
+- Limited access to business credit
+- No portable financial reputation
+- Fragmented financial tools
+
+Many businesses are profitable but cannot prove their financial health.
+
+## Solution
+
+LedgerFlow AI transforms business transactions into a trusted financial identity.
+
+Businesses can:
+
+- Receive USDC and Stellar payments
+- Create invoices and payment links
+- Manage payroll and expenses
+- Track cash flow
+- Use an AI financial assistant
+- Build a Business Reputation Score
+- Access financing through a credit marketplace
+
+## Key Features
+
+### Payments
+
+- USDC payments
+- Stellar wallets
+- Invoices
+- Payment links
+- Cross-border settlements
+
+### AI Financial Assistant
+
+Ask questions in natural language:
+
+```text
+Create an invoice for $500
+Show cash flow for this month
+Predict next month's expenses
+```
+
+### Business Reputation Score
+
+A trust score built from:
+
+- Payment history
+- Revenue consistency
+- Settlement reliability
+- Supplier relationships
+
+### Credit Marketplace
+
+Businesses with strong reputation scores can access:
+
+- Working capital loans
+- Invoice financing
+- Supplier credit
+- Revenue-based financing
+
+## Why Stellar?
+
+LedgerFlow AI uses Stellar for:
+
+- Fast settlements
+- Low transaction fees
+- USDC support
+- Global interoperability
+- Scalable payment infrastructure
+
+## Roadmap
+
+- Phase 1: Payments, Wallets, Invoicing
+- Phase 2: Payroll & Treasury Dashboard
+- Phase 3: AI Financial Assistant
+- Phase 4: Reputation Scoring
+- Phase 5: Credit Marketplace
+
+## Vision
+
+**Every payment builds reputation.
+Every reputation unlocks access to capital.**
+
+LedgerFlow AI is creating a future where businesses are rewarded for economic activity, not excluded because of missing financial history.
+
+---
+
+**Built with Stellar • AI • USDC** 🚀
+
+This version is the kind commonly used for hackathons, GitHub projects, accelerators, and MVP startups.
