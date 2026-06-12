@@ -1,12 +1,3 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-}
-
-
 
 
 generator client {
@@ -17,190 +8,258 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model User {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
+  fullName      String
   email         String   @unique
-  name          String?
-  avatar        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  passwordHash  String
 
-  // Stellar
-  stellarAddress String? @unique // Public key
-  isVerified    Boolean  @default(false)
+  role          UserRole @default(BUSINESS_OWNER)
 
-  // Relations
-  wallets         StellarWallet[]
-  savingsGoals    SavingsGoal[]
-  recurringDeposits RecurringDeposit[]
-  transactions    Transaction[]
-  budgets         Budget[]
-  subscriptions   Subscription[]
-  aiInsights      AIInsight[]
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  @@map("users")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model StellarWallet {
-  id            String   @id @default(cuid())
-  userId        String
-  publicKey     String   @unique
-  isPrimary     Boolean  @default(false)
-  label         String?
-  createdAt     DateTime @default(now())
+model Organization {
+  id            String @id @default(uuid())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("stellar_wallets")
-}
-
-model SavingsGoal {
-  id            String     @id @default(cuid())
-  userId        String
   name          String
-  description   String?
-  targetAmount  Decimal    @db.Decimal(18, 6)
-  currentAmount Decimal    @default(0) @db.Decimal(18, 6)
-  currency      String     @default("USDC")
-  deadline      DateTime?
-  isAchieved    Boolean    @default(false)
-  status        GoalStatus @default(ACTIVE)
+  slug          String @unique
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  country       String
 
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions  Transaction[]
+  industry      String?
 
-  @@map("savings_goals")
+  users         User[]
+
+  wallets       Wallet[]
+  invoices      Invoice[]
+  payments      Payment[]
+  expenses      Expense[]
+  payrolls      Payroll[]
+
+  reputation    ReputationScore?
+
+  financingApps FinancingApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum GoalStatus {
-  ACTIVE
-  PAUSED
-  COMPLETED
+model Wallet {
+  id              String @id @default(uuid())
+
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  stellarAddress  String @unique
+
+  network          String
+  assetCode        String
+
+  balance          Decimal @db.Decimal(18,2)
+
+  createdAt DateTime @default(now())
+}
+
+model Invoice {
+  id             String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  invoiceNumber  String @unique
+
+  customerName   String
+  customerEmail  String?
+
+  amount         Decimal @db.Decimal(18,2)
+
+  currency       String
+
+  status         InvoiceStatus @default(PENDING)
+
+  dueDate        DateTime
+
+  paymentLink    String?
+
+  payments       Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Payment {
+  id            String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  invoiceId      String?
+  invoice        Invoice? @relation(fields: [invoiceId], references: [id])
+
+  amount         Decimal @db.Decimal(18,2)
+
+  currency       String
+
+  txHash         String?
+
+  senderAddress  String?
+
+  receiverAddress String?
+
+  status         PaymentStatus
+
+  settledAt      DateTime?
+
+  createdAt      DateTime @default(now())
+}
+
+model Expense {
+  id             String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  title          String
+
+  category       ExpenseCategory
+
+  amount         Decimal @db.Decimal(18,2)
+
+  currency       String
+
+  description    String?
+
+  expenseDate    DateTime
+
+  createdAt      DateTime @default(now())
+}
+
+model Payroll {
+  id             String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  employeeName   String
+
+  employeeEmail  String?
+
+  salary         Decimal @db.Decimal(18,2)
+
+  currency       String
+
+  payDate        DateTime
+
+  status         PayrollStatus
+
+  createdAt      DateTime @default(now())
+}
+
+model AIConversation {
+  id             String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  userPrompt     String
+
+  response       String
+
+  createdAt      DateTime @default(now())
+}
+
+model ReputationScore {
+  id               String @id @default(uuid())
+
+  organizationId   String @unique
+  organization     Organization @relation(fields: [organizationId], references: [id])
+
+  score            Int
+
+  paymentHistory   Float
+  revenueStability Float
+  settlementRate   Float
+  supplierTrust    Float
+
+  lastCalculatedAt DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model FinancingApplication {
+  id             String @id @default(uuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  type           FinancingType
+
+  requestedAmount Decimal @db.Decimal(18,2)
+
+  status         FinancingStatus
+
+  reputationScore Int
+
+  lenderName     String?
+
+  createdAt DateTime @default(now())
+}
+
+
+enum UserRole {
+  ADMIN
+  BUSINESS_OWNER
+  ACCOUNTANT
+  FINANCE_MANAGER
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
   CANCELLED
 }
 
-model RecurringDeposit {
-  id            String       @id @default(cuid())
-  userId        String
-  goalId        String?
-  amount        Decimal      @db.Decimal(18, 6)
-  frequency     Frequency
-  dayOfWeek     Int?         // 0-6 (Sunday-Saturday)
-  dayOfMonth    Int?         // 1-31
-  nextExecution DateTime
-  isActive      Boolean      @default(true)
-
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goal          SavingsGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
-
-  @@map("recurring_deposits")
-}
-
-enum Frequency {
-  DAILY
-  WEEKLY
-  BIWEEKLY
-  MONTHLY
-  QUARTERLY
-}
-
-model Transaction {
-  id            String      @id @default(cuid())
-  userId        String
-  goalId        String?
-  amount        Decimal     @db.Decimal(18, 6)
-  type          TransactionType
-  status        TransactionStatus @default(COMPLETED)
-  description   String?
-  txHash        String?     // Stellar transaction hash
-  metadata      Json?
-
-  createdAt     DateTime    @default(now())
-
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goal          SavingsGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
-
-  @@map("transactions")
-}
-
-enum TransactionType {
-  DEPOSIT
-  WITHDRAWAL
-  TRANSFER
-  INTEREST
-}
-
-enum TransactionStatus {
+enum PaymentStatus {
   PENDING
+  PROCESSING
   COMPLETED
   FAILED
 }
 
-model Budget {
-  id            String   @id @default(cuid())
-  userId        String
-  category      String
-  monthlyLimit  Decimal  @db.Decimal(18, 6)
-  spent         Decimal  @default(0) @db.Decimal(18, 6)
-  period        String   @default("monthly") // monthly, weekly
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("budgets")
+enum PayrollStatus {
+  PENDING
+  PAID
+  FAILED
 }
 
-model Subscription {
-  id            String     @id @default(cuid())
-  userId        String     @unique
-  plan          PlanType
-  status        SubscriptionStatus @default(ACTIVE)
-  expiresAt     DateTime?
-  stripeId      String?    // If using Stripe
-
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("subscriptions")
+enum FinancingStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+  DISBURSED
 }
 
-enum PlanType {
-  FREE
-  PREMIUM
-  FAMILY
+enum FinancingType {
+  WORKING_CAPITAL
+  INVOICE_FINANCING
+  SUPPLIER_CREDIT
+  REVENUE_BASED
 }
 
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  PAST_DUE
+enum ExpenseCategory {
+  OPERATIONS
+  TRANSPORT
+  UTILITIES
+  SOFTWARE
+  PAYROLL
+  TAX
+  OTHER
 }
-
-model AIInsight {
-  id            String   @id @default(cuid())
-  userId        String
-  type          String   // "savings_tip", "spending_alert", "budget_suggestion"
-  title         String
-  content       String
-  isRead        Boolean  @default(false)
-  metadata      Json?
-
-  createdAt     DateTime @default(now())
-
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("ai_insights")
-}
-
